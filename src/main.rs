@@ -1,6 +1,9 @@
 extern crate collada_io; // Export
+extern crate clap; // CLI
 extern crate dot_vox; // Import
 extern crate stl_io; // Export
+
+pub mod app;
 
 const INPUT_FILEPATH: &'static str = "input.vox";
 const OUTPUT_STL_FILEPATH: &'static str = "output.stl";
@@ -702,7 +705,7 @@ fn convert_vox_dae(ifpath: &str, ofpath: &str)
     collada.write_to(&mut file).unwrap();
 }
 
-fn export_jasc_palette(ifpath: &str, ofpath: &str) -> std::io::Result<()>
+fn _export_jasc_palette(ifpath: &str, ofpath: &str) -> std::io::Result<()>
 {
     let in_data = dot_vox::load(ifpath).unwrap();
     let file = File::create(ofpath)?;
@@ -722,9 +725,22 @@ fn export_jasc_palette(ifpath: &str, ofpath: &str) -> std::io::Result<()>
     Ok(())
 }
 
-fn main() {
-    println!("Hello, world!");
-    convert_vox_stl(INPUT_FILEPATH, OUTPUT_STL_FILEPATH);
-    convert_vox_dae(INPUT_FILEPATH, OUTPUT_DAE_FILEPATH);
-    export_jasc_palette(INPUT_FILEPATH, OUTPUT_PAL_FILEPATH).unwrap();
+fn main() 
+{
+    let app = app::new_app();
+    let matches = app.get_matches();
+    let in_file = matches.value_of("input").unwrap_or(INPUT_FILEPATH);
+    let out_file: &str;
+
+    if matches.is_present("stl")
+    {
+        out_file = matches.value_of("output").unwrap_or(OUTPUT_STL_FILEPATH);
+        convert_vox_stl(in_file, out_file);
+    } else if matches.is_present("dae")
+    {
+        out_file = matches.value_of("output").unwrap_or(OUTPUT_DAE_FILEPATH);
+        convert_vox_dae(in_file, out_file);
+    } else {
+        // Need either stl or dae so not sure what to do here
+    }
 }

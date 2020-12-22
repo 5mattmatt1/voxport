@@ -15,11 +15,7 @@ keywords = ["stl", "collada", "dae", "vox", "voxel", "3d", "mesh"]
 [dependencies]
 dot_vox = "4.1.0"
 stl_io = "0.5.2"
+collada_io = "0.1.0"
 
 [dependencies.clap]
 version = "3.0.0-beta.2"
-
-[dependencies.collada_io]
-git = "https://github.com/5mattmatt1/collada_io.git"
-branch = "main"
-version = "0.1.0"

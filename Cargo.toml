@@ -2,6 +2,8 @@
 name = "voxport"
 description = "Simple tool for converting MagicaVoxel files"
 homepage = "https://github.com/5mattmatt1/voxport"
+repository = "https://github.com/5mattmatt1/voxport"
+readme = "README.md"
 version = "0.1.0"
 authors = ["Matthew Henderson <mattw2018@hotmail.com>"]
 edition = "2018"

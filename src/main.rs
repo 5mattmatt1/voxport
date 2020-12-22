@@ -8,7 +8,7 @@ pub mod app;
 const INPUT_FILEPATH: &'static str = "input.vox";
 const OUTPUT_STL_FILEPATH: &'static str = "output.stl";
 const OUTPUT_DAE_FILEPATH: &'static str = "output.dae";
-const OUTPUT_PAL_FILEPATH: &'static str = "output.txt";
+const _OUTPUT_PAL_FILEPATH: &'static str = "output.txt";
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -178,12 +178,7 @@ fn reorder_voxels(voxels: &mut Vec<dot_vox::Voxel>, size: &dot_vox::Size) -> Vec
         let idx = get_voxel_idx(voxel, size);
         ret_voxels[idx] = Some(*voxel);
     }
-    // voxels.sort_by(|a_vox: &dot_vox::Voxel, b_vox: &dot_vox::Voxel| {
-    //     let a: usize = get_voxel_idx(&a_vox, size);
-    //     let b: usize = get_voxel_idx(&b_vox, size);
-        
-    //     return a.partial_cmp(&b).unwrap();
-    // });
+
     return ret_voxels;
 }
 
@@ -204,13 +199,6 @@ fn has_neighbor(voxels: &Vec<Option<dot_vox::Voxel>>, voxel: &dot_vox::Voxel, si
     let neighbor: Option<dot_vox::Voxel>;
     let idx = get_voxel_idx(&pos, size);
     neighbor = voxels[idx];
-    // println!("Base: {}, {}, {}", voxel.x, voxel.y, voxel.z);
-    // println!("Base (Signed): {}, {}, {}", vx, vy, vz);
-    // println!("By: {}, {}, {}", x, y, z);
-    // println!("Relative: {}, {}, {}", pos.x, pos.y, pos.z);
-    // println!("Index: {}", idx);
-    // println!("Some: {}", neighbor.is_some());
-    // println!("--------------------------------------------");
 
     return Ok(neighbor.is_some());
 }
@@ -290,7 +278,6 @@ fn convert_triangles(mvoxels: &Vec<Option<MetaVoxel>>) -> Vec<Triangle>
         match opt_mvoxel
         {
             Some(mvoxel) => {
-                // Should this part be turned into a triangles() function on the MetaVoxel struct?
                 let vleft_back_top = Vertex {
                     x: mvoxel.voxel.x as f32 + 0.0,
                     y: mvoxel.voxel.y as f32 + 0.0,
@@ -548,37 +535,18 @@ fn convert_vox_stl(ifpath: &str, ofpath: &str)
 {
     use std::fs::OpenOptions;
     let mut in_data = dot_vox::load(ifpath).unwrap();
-    println!("Vox Version #: {}", in_data.version);
-    println!("# of Models: {}", in_data.models.len());
 
-    // let mut vertices: Vec<Vertex> = Vec::new();
-    // let mut normals: Vec<Normal> = Vec::new();
     let mut triangles: Vec<Triangle> = Vec::new();
-    // let mut indexed_triangles: Vec<IndexedTriangle> = Vec::new();
     for model in &mut in_data.models
     {
         let size = model.size;
         let voxels = reorder_voxels(&mut model.voxels, &size);
-        // Need to change this to Vec<Option<Voxel>>
-        // reorder_voxels(&mut model.voxels, &size);    
         let mvoxels = convert_meta_voxels(&voxels, &size);
         triangles.append(&mut convert_triangles(&mvoxels));
-        println!("# Of Triangles in Model: {}", triangles.len());
     }
 
-    // index_triangles(&triangles, &mut vertices, &mut normals, &mut indexed_triangles);
-    // let stl_vertices: Vec<stl_io::Vertex>;
     let stl_triangles: Vec<stl_io::Triangle>;
-    // let stl_indexed_triangles: Vec<stl_io::IndexedTriangle>;
-    // stl_vertices = vertices.iter().map(|vertex| (*vertex).into()).collect::<Vec<_>>();
     stl_triangles = triangles.iter().map(|triangle| (*triangle).into()).collect::<Vec<_>>();
-    // stl_indexed_triangles = indexed_triangles.iter().map(|idx_triangle| (*idx_triangle).into()).collect::<Vec<_>>();
-
-    // let indexed_mesh: stl_io::IndexedMesh = stl_io::IndexedMesh {
-    //     vertices: stl_vertices,
-    //     faces: stl_indexed_triangles
-    // };
-    // indexed_mesh.validate().unwrap();
     let mut file = OpenOptions::new().write(true).create(true).open(ofpath).unwrap();
     stl_io::write_stl(&mut file, stl_triangles.iter()).unwrap();
 }
@@ -586,22 +554,15 @@ fn convert_vox_stl(ifpath: &str, ofpath: &str)
 fn convert_vox_dae(ifpath: &str, ofpath: &str)
 {
     let mut in_data = dot_vox::load(ifpath).unwrap();
-    println!("Vox Version #: {}", in_data.version);
-    println!("# of Models: {}", in_data.models.len());
 
     let collada: collada_io::collada::Collada;
     let mut geometries: Vec<collada_io::geometry::Geometry> = Vec::new();
     for model in &mut in_data.models
     {
         let size = model.size;
-        println!("Size: ({}, {}, {})", size.x, size.y, size.z);
         let voxels = reorder_voxels(&mut model.voxels, &size);
-        println!("Length: {}", voxels.len());
-        // Need to change this to Vec<Option<Voxel>>
-        // reorder_voxels(&mut model.voxels, &size);    
         let mvoxels = convert_meta_voxels(&voxels, &size);
         let triangles = convert_triangles(&mvoxels);
-        println!("# Of Triangles in Model: {}", triangles.len());
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut normals: Vec<Normal> = Vec::new();
         let mut indexed_triangles: Vec<IndexedTriangle> = Vec::new();
